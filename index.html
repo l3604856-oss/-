@@ -229,9 +229,8 @@
 
     let currentUser = null;
     let globalPlayersData = [];
-    let currentTab = 'all'; // 'all' 代表綜合圖池, 'match' 代表比賽/交流專用圖池
+    let currentTab = 'all';
 
-    // 檢查登入狀態
     async function checkUser() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
@@ -390,26 +389,22 @@
       { name: "N被遺忘的沙之記憶", group: "red", times: ["2.19.49", "2.21.49", "2.23.49", "2.26.49", "2.29.49", "2.32.79"] }
     ];
 
-    // 綜合圖池 (93張)
     const rawDataAll = initialData.map((track, idx) => {
       const newTimes = [...track.times];
       newTimes.push(entertainmentTimes[idx] || "-");
       return { ...track, times: newTimes };
     });
 
-    // 比賽/交流專用常見圖池清單名稱
     const matchTrackNames = [
       "龍之運河", "拉薩", "杜拜富人區", "布羅帝研究所", "中華西湖", "魔女城",
       "太空走廊", "龍之遺跡", "絕壁海灣", "海底神殿", "旋轉工地", "黃金文明座標",
       "中華胡同", "鯊魚島", "森林吊橋", "停機坪", "骷髏城", "太空蜿蜒", "五區", "R森髮"
     ];
 
-    // 從綜合圖池中精準過濾出比賽專用圖池
     const rawDataMatch = matchTrackNames.map(name => {
       return rawDataAll.find(t => t.name === name);
     }).filter(Boolean);
 
-    // 分別儲存兩個圖池的選項紀錄
     let selectionsAll = {};
     let selectionsMatch = {};
 
@@ -421,7 +416,6 @@
       return currentTab === 'all' ? rawDataAll : rawDataMatch;
     }
 
-    // 切換圖池 Tab
     function switchTab(tab) {
       currentTab = tab;
       const btnAll = document.getElementById('tab-all');
@@ -607,16 +601,22 @@
       }
     }
 
+    // 排行榜載入（修復過濾與排序邏輯）
     async function openLeaderboard() {
       const modal = document.getElementById('leaderboard-modal');
       const listContainer = document.getElementById('leaderboard-list');
       modal.classList.remove('hidden');
       listContainer.innerHTML = '<div class="text-center py-8 text-amber-800/60 font-semibold text-sm">載入排行榜中...</div>';
 
+      const scoreField = currentTab === 'all' ? 'avg_score' : 'match_avg_score';
+
+      // 抓取資料並過濾掉未填寫（分數為 null 或 0）的玩家
       const { data, error } = await supabaseClient
         .from('player_scores')
         .select('*')
-        .order(currentTab === 'all' ? 'avg_score' : 'match_avg_score', { ascending: false })
+        .not(scoreField, 'is', null)
+        .gt(scoreField, 0)
+        .order(scoreField, { ascending: false })
         .limit(20);
 
       if (error) {
@@ -625,7 +625,7 @@
       }
 
       if (!data || data.length === 0) {
-        listContainer.innerHTML = '<div class="text-center py-8 text-amber-800/60 font-semibold text-sm">目前尚無車手登錄成績</div>';
+        listContainer.innerHTML = '<div class="text-center py-8 text-amber-800/60 font-semibold text-sm">目前此圖池尚無車手登錄成績</div>';
         return;
       }
 
@@ -633,7 +633,7 @@
 
       let html = `<div class="text-xs font-bold text-amber-800 mb-2">目前顯示：${currentTab === 'all' ? '🏁 綜合圖池排行榜' : '🔥 比賽專用圖池排行榜'}</div>`;
       data.forEach((player, idx) => {
-        const score = Number(currentTab === 'all' ? player.avg_score : player.match_avg_score) || 0;
+        const score = Number(player[scoreField]) || 0;
         let rankBadge = "🎮 娛樂";
         if (score >= 90) rankBadge = "🏆 Top 車神";
         else if (score >= 75) rankBadge = "🥇 強主水準";
@@ -701,7 +701,6 @@
       contentEl.innerHTML = detailsHtml || '<div class="text-amber-800/60">無評定記錄</div>';
     }
 
-    // 初始化載入綜合圖池
     switchTab('all');
   </script>
 </body>
