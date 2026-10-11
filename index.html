@@ -127,12 +127,15 @@
         <span class="text-xs font-black text-amber-900 uppercase whitespace-nowrap">遊戲 ID / 玩家名稱:</span>
         <input type="text" id="player-name-input" placeholder="例如：R2S_Soda" class="w-full sm:w-64 px-3.5 py-2 bg-[#fbf5eb] border border-[#e0cbab] rounded-xl text-amber-950 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30">
       </div>
-      <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-        <button onclick="saveScoreToCloud()" class="flex-1 sm:flex-none px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white font-black text-xs rounded-xl shadow-md transition-all">
-          ☁️ 儲存成績至雲端
+      <div class="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
+        <button onclick="saveScoreToCloud()" class="px-4 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white font-black text-xs rounded-xl shadow-md transition-all">
+          ☁️ 儲存成績
         </button>
-        <button onclick="openLeaderboard()" class="flex-1 sm:flex-none px-4 py-2.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs rounded-xl border border-amber-300 transition-all">
-          🏆 查看排行榜
+        <button onclick="resetAllSelections()" class="px-4 py-2.5 bg-rose-100 hover:bg-rose-200 text-rose-900 font-bold text-xs rounded-xl border border-rose-300 transition-all">
+          🔄 重製選項
+        </button>
+        <button onclick="openLeaderboard()" class="px-4 py-2.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs rounded-xl border border-amber-300 transition-all">
+          🏆 排行榜
         </button>
       </div>
     </div>
@@ -253,7 +256,6 @@
       window.location.reload();
     }
 
-    // 新增「娛樂」分線名稱與權重 (0分)
     const tierLabels = ["Top", "強主", "主力", "一線", "二線", "三線", "娛樂"];
     const tierScores = [100, 80, 60, 40, 20, 10, 0];
 
@@ -264,7 +266,6 @@
       red: { bg: "bg-[#ffe2e2] border-[#fbc4c4]", title: "text-rose-950" }
     };
 
-    // 您提供的 93 個娛樂線秒數
     const entertainmentTimes = [
       "1.32.50", "1.28.30", "1.45.80", "1.53.30", "1.39.80", "1.56.30", "1.35.30", "1.42.30", "1.03.80",
       "1.40.80", "1.36.50", "1.25.80", "1.06.00", "1.44.30", "1.25.30", "1.46.30", "1.54.80", "0.57.80",
@@ -280,7 +281,6 @@
     ];
 
     const initialData = [
-      // 區塊 1：淡黃色 (9張)
       { name: "城鎮高速公路", group: "yellow", times: ["1.27.99", "1.28.79", "1.29.29", "1.30.29", "1.31.29", "1.32.49"] },
       { name: "城鎮南山", group: "yellow", times: ["1.23.49", "1.24.29", "1.24.99", "1.25.99", "1.26.99", "1.28.29"] },
       { name: "濱海風景", group: "yellow", times: ["1.39.99", "1.40.99", "1.41.99", "1.43.29", "1.44.49", "1.45.79"] },
@@ -291,7 +291,6 @@
       { name: "神域次元之門", group: "yellow", times: ["1.36.49", "1.37.49", "1.38.49", "1.39.79", "1.40.99", "1.42.29"] },
       { name: "城堡午後的假日", group: "yellow", times: ["0.59.79", "1.00.49", "1.01.29", "1.01.99", "1.02.79", "1.03.79"] },
 
-      // 區塊 2：淡綠色 (37張)
       { name: "靈岩環道", group: "green", times: ["1.35.99", "1.36.79", "1.37.79", "1.38.49", "1.39.79", "1.40.79"] },
       { name: "杜拜富人區", group: "green", times: ["1.31.49", "1.32.29", "1.33.29", "1.34.29", "1.35.29", "1.36.49"] },
       { name: "刀劍野外修練館", group: "green", times: ["1.20.49", "1.21.29", "1.22.29", "1.23.29", "1.24.49", "1.25.79"] },
@@ -330,7 +329,6 @@
       { name: "巨大煉油廠", group: "green", times: ["1.55.99", "1.57.29", "1.58.79", "2.00.29", "2.01.99", "2.03.79"] },
       { name: "冰河驚險越野滑雪", group: "green", times: ["1.05.99", "1.06.49", "1.07.29", "1.07.99", "1.08.79", "1.09.79"] },
 
-      // 區塊 3：淡藍色 (31張)
       { name: "龍之遺跡", group: "blue", times: ["1.27.99", "1.28.79", "1.30.29", "1.31.49", "1.32.99", "1.34.49"] },
       { name: "萬里長城", group: "blue", times: ["1.31.49", "1.32.49", "1.33.79", "1.34.99", "1.36.49", "1.38.29"] },
       { name: "絕壁海灣", group: "blue", times: ["1.40.49", "1.41.49", "1.42.99", "1.44.29", "1.45.99", "1.47.79"] },
@@ -363,7 +361,6 @@
       { name: "龐克章魚", group: "blue", times: ["1.15.29", "1.16.49", "1.17.79", "1.19.29", "1.20.79", "1.22.49"] },
       { name: "大城堡黃金衝刺", group: "blue", times: ["1.50.49", "1.52.29", "1.53.99", "1.55.99", "1.58.49", "2.00.99"] },
 
-      // 區塊 4：淡紅色 (16張)
       { name: "彩虹之門", group: "red", times: ["1.42.29", "1.43.79", "1.45.29", "1.47.29", "1.49.49", "1.51.79"] },
       { name: "太空蜿蜒", group: "red", times: ["1.39.99", "1.40.99", "1.42.79", "1.44.29", "1.46.29", "1.48.29"] },
       { name: "礦山曲折滑坡", group: "red", times: ["1.02.79", "1.03.49", "1.04.49", "1.05.79", "1.06.99", "1.08.49"] },
@@ -382,7 +379,6 @@
       { name: "N被遺忘的沙之記憶", group: "red", times: ["2.19.49", "2.21.49", "2.23.49", "2.26.49", "2.29.49", "2.32.79"] }
     ];
 
-    // 自動把每個賽道最後面補上「娛樂」的秒數
     const rawData = initialData.map((track, idx) => {
       const newTimes = [...track.times];
       if (entertainmentTimes[idx]) {
@@ -393,7 +389,7 @@
       return { ...track, times: newTimes };
     });
 
-    const playerSelections = {};
+    let playerSelections = {};
 
     function renderTracks(filterText = "") {
       const container = document.getElementById("tracks-list");
@@ -454,6 +450,17 @@
       calculateRank();
     }
 
+    // 重製所有選項按鈕功能
+    function resetAllSelections() {
+      if (confirm('確定要重製所有已選取的賽道成績嗎？')) {
+        for (let key in playerSelections) {
+          delete playerSelections[key];
+        }
+        renderTracks(document.getElementById("searchInput").value);
+        calculateRank();
+      }
+    }
+
     function calculateRank() {
       const selectedIndices = Object.values(playerSelections);
       const totalAnswered = selectedIndices.length;
@@ -472,13 +479,14 @@
 
       let rankTitle = "🎮 娛樂車手";
       if (avgScore >= 90) rankTitle = "🏆 Top 車神";
-      else if (avgScore >= 70) rankTitle = "🥇 強主水準";
-      else if (avgScore >= 50) rankTitle = "🥈 主力水準";
-      else if (avgScore >= 30) rankTitle = "🥉 一線車手";
-      else if (avgScore >= 15) rankTitle = "🚗 二線車手";
-      else if (avgScore >= 5)  rankTitle = "🌱 三線車手";
+      else if (avgScore >= 75) rankTitle = "🥇 強主水準";
+      else if (avgScore >= 55) rankTitle = "🥈 主力水準";
+      else if (avgScore >= 35) rankTitle = "🥉 一線車手";
+      else if (avgScore >= 20) rankTitle = "🚗 二線車手";
+      else if (avgScore >= 10) rankTitle = "🌱 三線車手";
 
-      const pointerLeftPercent = (100 - avgScore) * 0.8333 + 8.33;
+      // 針對 7 個區塊精準計算指針位置百分比
+      const pointerLeftPercent = 100 - avgScore;
 
       document.getElementById("rank-title").innerText = rankTitle;
       document.getElementById("score-tag").innerText = `${avgScore.toFixed(1)} 分`;
@@ -492,7 +500,6 @@
       renderTracks(query);
     }
 
-    // 儲存成績到雲端
     async function saveScoreToCloud() {
       if (!currentUser) { alert('請先登入帳號才能儲存成績至雲端！'); return; }
       const playerName = document.getElementById('player-name-input').value.trim();
@@ -512,7 +519,6 @@
       else alert('🎉 成功儲存成績至雲端排行榜！');
     }
 
-    // 從雲端讀取自己的成績
     async function loadScoreFromCloud() {
       if (!currentUser) return;
       const { data, error } = await supabaseClient
@@ -531,7 +537,6 @@
       }
     }
 
-    // 開啟排行榜視窗
     async function openLeaderboard() {
       const modal = document.getElementById('leaderboard-modal');
       const listContainer = document.getElementById('leaderboard-list');
@@ -561,11 +566,11 @@
         let rankBadge = "🎮 娛樂";
         let score = Number(player.avg_score);
         if (score >= 90) rankBadge = "🏆 Top 車神";
-        else if (score >= 70) rankBadge = "🥇 強主水準";
-        else if (score >= 50) rankBadge = "🥈 主力水準";
-        else if (score >= 30) rankBadge = "🥉 一線車手";
-        else if (score >= 15) rankBadge = "🚗 二線車手";
-        else if (score >= 5)  rankBadge = "🌱 三線車手";
+        else if (score >= 75) rankBadge = "🥇 強主水準";
+        else if (score >= 55) rankBadge = "🥈 主力水準";
+        else if (score >= 35) rankBadge = "🥉 一線車手";
+        else if (score >= 20) rankBadge = "🚗 二線車手";
+        else if (score >= 10) rankBadge = "🌱 三線車手";
 
         html += `
           <div class="p-3 bg-white/90 border border-amber-200 rounded-xl shadow-2xs space-y-2">
@@ -584,12 +589,9 @@
                 </button>
               </div>
             </div>
-            <!-- 詳細賽道評定展開區塊 -->
             <div id="details-${player.user_id}" class="hidden pt-3 border-t border-amber-100 space-y-2">
               <div class="text-xs font-bold text-amber-900">各賽道評定明細：</div>
-              <div class="max-h-48 overflow-y-auto space-y-1 bg-[#fbf5eb] p-2.5 rounded-lg border border-amber-200 text-xs font-medium text-amber-950" id="content-${player.user_id}">
-                <!-- 動態填入賽道細節 -->
-              </div>
+              <div class="max-h-48 overflow-y-auto space-y-1 bg-[#fbf5eb] p-2.5 rounded-lg border border-amber-200 text-xs font-medium text-amber-950" id="content-${player.user_id}"></div>
             </div>
           </div>
         `;
@@ -601,7 +603,6 @@
       document.getElementById('leaderboard-modal').classList.add('hidden');
     }
 
-    // 切換展開某位玩家的賽道評定細節
     function togglePlayerDetails(userId) {
       const detailsEl = document.getElementById(`details-${userId}`);
       const contentEl = document.getElementById(`content-${userId}`);
@@ -627,7 +628,6 @@
       contentEl.innerHTML = detailsHtml || '<div class="text-amber-800/60">無評定記錄</div>';
     }
 
-    // 初始化渲染
     renderTracks();
   </script>
 </body>
