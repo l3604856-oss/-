@@ -123,17 +123,19 @@
 
   <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
 
-    <!-- 🏷️ 功能切換 Tab 按鈕列 -->
-    <div class="flex flex-col sm:flex-row gap-3 mb-6">
-      <button onclick="switchTab('notice')" id="tab-notice" class="flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all bg-amber-700 text-white shadow-md flex items-center justify-center gap-2">
-        📢 活動公告專區
-      </button>
-      <button onclick="switchTab('all')" id="tab-all" class="flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all bg-amber-200 text-amber-900 border border-amber-300 hover:bg-amber-300 shadow-xs flex items-center justify-center gap-2">
-        🏁 綜合圖池 (93張賽道)
-      </button>
-      <button onclick="switchTab('match')" id="tab-match" class="flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all bg-amber-200 text-amber-900 border border-amber-300 hover:bg-amber-300 shadow-xs flex items-center justify-center gap-2">
-        🔥 比賽 / 交流圖池(常見初估評鑑圖池)
-      </button>
+    <!-- 🏷️ 功能切換 Tab 按鈕列 (跟隨滑動 sticky top-[65px]) -->
+    <div class="sticky top-[65px] z-40 bg-[#fbf3e4]/95 backdrop-blur-md py-2 mb-4 transition-all">
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button onclick="switchTab('notice')" id="tab-notice" class="flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all bg-amber-700 text-white shadow-md flex items-center justify-center gap-2">
+          📢 活動公告專區
+        </button>
+        <button onclick="switchTab('all')" id="tab-all" class="flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all bg-amber-200 text-amber-900 border border-amber-300 hover:bg-amber-300 shadow-xs flex items-center justify-center gap-2">
+          🏁 綜合圖池 (93張賽道)
+        </button>
+        <button onclick="switchTab('match')" id="tab-match" class="flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all bg-amber-200 text-amber-900 border border-amber-300 hover:bg-amber-300 shadow-xs flex items-center justify-center gap-2">
+          🔥 比賽 / 交流圖池(常見初估評鑑圖池)
+        </button>
+      </div>
     </div>
 
     <!-- 📢 公告專區內容區塊 (預設顯示) -->
@@ -158,10 +160,21 @@
             </ul>
           </div>
 
+          <!-- 🖼️ 海報卡片：點擊放大 + 前往活動連結 -->
           <div class="flex justify-center">
-            <div class="w-48 bg-white/90 border border-amber-300 rounded-xl p-2.5 shadow-sm">
-              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzBSykQYbv72PH-LmVvLNE20QdGqYLq7352y5fo6H5IA&s=10" alt="活動宣傳海報" class="w-full h-72 object-cover rounded-lg border border-amber-200">
-              <div class="text-xs text-center font-bold text-amber-800 mt-2">試做預覽圖</div>
+            <div class="w-52 bg-white/90 border border-amber-300 rounded-xl p-3 shadow-md hover:shadow-lg transition-all space-y-2">
+              <div class="relative group cursor-pointer overflow-hidden rounded-lg border border-amber-200" onclick="openPosterModal()">
+                <img id="notice-poster-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzBSykQYbv72PH-LmVvLNE20QdGqYLq7352y5fo6H5IA&s=10" alt="文山盃賽事海報" class="w-full h-72 object-cover transition-transform duration-300 group-hover:scale-105">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-xs gap-1">
+                  🔍 點擊查看大圖
+                </div>
+              </div>
+              <div class="text-xs text-center font-extrabold text-amber-900">🏆 預覽試做圖</div>
+              
+              <!-- 🔗 前往活動連結按鈕 -->
+              <a href="https://www.tiktok.com/@54soda?is_from_webapp=1&sender_device=pc" target="_blank" rel="noopener noreferrer" class="w-full py-1.5 px-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white font-bold text-xs rounded-lg shadow-2xs flex items-center justify-center gap-1 transition-all">
+                🔗 前往活動連結
+              </a>
             </div>
           </div>
         </div>
@@ -174,8 +187,8 @@
       <!-- 📸 截圖匯出專用包裝區塊 -->
       <div id="capture-area" class="space-y-6 bg-[#fbf3e4] p-2 rounded-2xl">
         
-        <!-- 玩家資訊與個人榮譽戰績卡片 -->
-        <div class="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-[#e5d2b3] shadow-md space-y-3">
+        <!-- 玩家資訊與個人榮譽戰績卡片 (跟隨滑動 sticky top-[130px]) -->
+        <div class="sticky top-[130px] z-30 bg-white/95 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-[#e5d2b3] shadow-md space-y-3 transition-all">
           <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3 w-full sm:w-auto">
               <span class="text-xs font-black text-amber-900 uppercase whitespace-nowrap">遊戲 ID / 玩家名稱:</span>
@@ -215,8 +228,8 @@
 
         </div>
 
-        <!-- 實力評定儀表板 -->
-        <div class="bg-gradient-to-b from-[#fbf5ea]/95 to-[#f5ebd8]/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-[#e5d2b3] shadow-xl shadow-amber-900/10 relative overflow-hidden">
+        <!-- 實力評定儀表板 (跟隨滑動 sticky top-[260px]) -->
+        <div class="sticky top-[260px] z-20 bg-gradient-to-b from-[#fbf5ea]/95 to-[#f5ebd8]/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-[#e5d2b3] shadow-xl shadow-amber-900/10 relative overflow-hidden transition-all">
           <div class="absolute -right-16 -top-16 w-64 h-64 bg-amber-200/40 rounded-full blur-3xl pointer-events-none"></div>
           <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -269,13 +282,26 @@
         </div>
 
         <!-- 賽道列表容器 -->
-        <div id="tracks-list" class="space-y-4"></div>
+        <div id="tracks-list" class="space-y-4 pt-2"></div>
 
       </div>
 
     </div>
 
   </main>
+
+  <!-- 🔍 海報大圖檢視 Modal -->
+  <div id="poster-modal" class="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4" onclick="closePosterModal()">
+    <div class="relative max-w-2xl w-full bg-[#fbf5ea] p-3 rounded-2xl border border-amber-300 shadow-2xl space-y-3" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between px-2">
+        <h3 class="font-extrabold text-amber-950 text-sm">🔍 活動海報詳細預覽</h3>
+        <button onclick="closePosterModal()" class="w-7 h-7 rounded-full bg-amber-200 text-amber-900 font-bold flex items-center justify-center hover:bg-amber-300 text-xs">✕</button>
+      </div>
+      <div class="max-h-[80vh] overflow-y-auto rounded-xl border border-amber-200 bg-black/5 flex items-center justify-center">
+        <img id="modal-poster-img" src="" alt="大圖海報" class="w-full h-auto object-contain rounded-lg">
+      </div>
+    </div>
+  </div>
 
   <!-- 排行榜互動視窗 (Modal) -->
   <div id="leaderboard-modal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
@@ -300,6 +326,17 @@
     let globalPlayersData = [];
     let currentTab = 'notice'; 
     let playerHonors = [];
+
+    // 🖼️ 海報 Modal 控制
+    function openPosterModal() {
+      const posterSrc = document.getElementById('notice-poster-img').src;
+      document.getElementById('modal-poster-img').src = posterSrc;
+      document.getElementById('poster-modal').classList.remove('hidden');
+    }
+
+    function closePosterModal() {
+      document.getElementById('poster-modal').classList.add('hidden');
+    }
 
     async function checkUser() {
       const { data: { session } } = await supabaseClient.auth.getSession();
@@ -337,7 +374,7 @@
     }
 
     function addHonorPrompt() {
-      const honorText = prompt("請輸入您的比賽戰績或輝煌紀錄：\n（例如：S40 車隊交流賽 冠軍 / 開拓者盃 16強）");
+      const honorText = prompt("請輸入您的比賽戰績或輝煌紀錄：\n（例如：s1文山杯 冠軍 / s1雙區賽 冠軍）");
       if (honorText && honorText.trim()) {
         playerHonors.push(honorText.trim());
         renderHonors();
@@ -780,7 +817,6 @@
 
       const scoreField = currentTab === 'all' ? 'avg_score' : 'match_avg_score';
 
-      // 拿掉 .limit() 限制以載入所有玩家
       const { data, error } = await supabaseClient
         .from('player_scores')
         .select('*')
