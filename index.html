@@ -88,9 +88,14 @@
       box-shadow: 0 8px 20px rgba(120, 80, 20, 0.08);
       transform: translateY(-1px);
     }
+
+    /* 動態控制是否啟用 sticky 懸浮 */
+    .desktop-sticky .sticky-tab { position: sticky; top: 65px; z-index: 40; }
+    .desktop-sticky .sticky-player { position: sticky; top: 130px; z-index: 30; }
+    .desktop-sticky .sticky-dashboard { position: sticky; top: 260px; z-index: 20; }
   </style>
 </head>
-<body class="min-h-screen pb-16 antialiased selection:bg-amber-600 selection:text-white">
+<body id="app-body" class="min-h-screen pb-16 antialiased selection:bg-amber-600 selection:text-white desktop-sticky">
 
   <!-- 頂部導覽列 -->
   <header class="w-full bg-[#f2e2c6]/95 backdrop-blur-md border-b border-[#e2cca4] sticky top-0 z-50 shadow-xs">
@@ -105,17 +110,24 @@
         </div>
       </div>
 
-      <!-- 登入與帳號狀態區 -->
-      <div id="auth-container" class="flex items-center gap-2">
-        <div id="logged-out-view" class="flex items-center gap-2">
-          <input type="email" id="auth-email" placeholder="電子郵件" class="px-3 py-1.5 text-xs bg-white border border-amber-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500">
-          <input type="password" id="auth-password" placeholder="密碼" class="px-3 py-1.5 text-xs bg-white border border-amber-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500 w-24">
-          <button onclick="handleLogin()" class="px-3 py-1.5 text-xs font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800 shadow-2xs transition-all">登入</button>
-          <button onclick="handleSignUp()" class="px-3 py-1.5 text-xs font-bold bg-[#fbf2df] text-amber-900 border border-amber-300 rounded-lg hover:bg-amber-100 transition-all">註冊</button>
-        </div>
-        <div id="logged-in-view" class="hidden flex items-center gap-2">
-          <span id="user-display-email" class="text-xs font-bold text-amber-900"></span>
-          <button onclick="handleLogout()" class="px-3 py-1.5 text-xs font-bold bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-all">登出</button>
+      <!-- 登入與版面模式切換區 -->
+      <div class="flex items-center gap-2 flex-wrap justify-end">
+        <!-- 📱/💻 檢視模式切換按鈕 -->
+        <button onclick="toggleLayoutMode()" id="layout-mode-btn" class="px-3 py-1.5 text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-lg transition-all flex items-center gap-1">
+          💻 模式: 電腦版(懸浮)
+        </button>
+
+        <div id="auth-container" class="flex items-center gap-2">
+          <div id="logged-out-view" class="flex items-center gap-2">
+            <input type="email" id="auth-email" placeholder="電子郵件" class="px-3 py-1.5 text-xs bg-white border border-amber-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500">
+            <input type="password" id="auth-password" placeholder="密碼" class="px-3 py-1.5 text-xs bg-white border border-amber-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-amber-500 w-24">
+            <button onclick="handleLogin()" class="px-3 py-1.5 text-xs font-bold bg-amber-700 text-white rounded-lg hover:bg-amber-800 shadow-2xs transition-all">登入</button>
+            <button onclick="handleSignUp()" class="px-3 py-1.5 text-xs font-bold bg-[#fbf2df] text-amber-900 border border-amber-300 rounded-lg hover:bg-amber-100 transition-all">註冊</button>
+          </div>
+          <div id="logged-in-view" class="hidden flex items-center gap-2">
+            <span id="user-display-email" class="text-xs font-bold text-amber-900"></span>
+            <button onclick="handleLogout()" class="px-3 py-1.5 text-xs font-bold bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-all">登出</button>
+          </div>
         </div>
       </div>
     </div>
@@ -123,8 +135,8 @@
 
   <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
 
-    <!-- 🏷️ 功能切換 Tab 按鈕列 (跟隨滑動 sticky top-[65px]) -->
-    <div class="sticky top-[65px] z-40 bg-[#fbf3e4]/95 backdrop-blur-md py-2 mb-4 transition-all">
+    <!-- 🏷️ 功能切換 Tab 按鈕列 -->
+    <div class="sticky-tab bg-[#fbf3e4]/95 backdrop-blur-md py-2 mb-4 transition-all">
       <div class="flex flex-col sm:flex-row gap-3">
         <button onclick="switchTab('notice')" id="tab-notice" class="flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all bg-amber-700 text-white shadow-md flex items-center justify-center gap-2">
           📢 活動公告專區
@@ -169,10 +181,10 @@
                   🔍 點擊查看大圖
                 </div>
               </div>
-              <div class="text-xs text-center font-extrabold text-amber-900">🏆 預覽試做圖</div>
+              <div class="text-xs text-center font-extrabold text-amber-900">🏆 文山盃賽事圖池海報</div>
               
               <!-- 🔗 前往活動連結按鈕 -->
-              <a href="https://www.tiktok.com/@54soda?is_from_webapp=1&sender_device=pc" target="_blank" rel="noopener noreferrer" class="w-full py-1.5 px-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white font-bold text-xs rounded-lg shadow-2xs flex items-center justify-center gap-1 transition-all">
+              <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" class="w-full py-1.5 px-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white font-bold text-xs rounded-lg shadow-2xs flex items-center justify-center gap-1 transition-all">
                 🔗 前往活動連結
               </a>
             </div>
@@ -187,8 +199,8 @@
       <!-- 📸 截圖匯出專用包裝區塊 -->
       <div id="capture-area" class="space-y-6 bg-[#fbf3e4] p-2 rounded-2xl">
         
-        <!-- 玩家資訊與個人榮譽戰績卡片 (跟隨滑動 sticky top-[130px]) -->
-        <div class="sticky top-[130px] z-30 bg-white/95 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-[#e5d2b3] shadow-md space-y-3 transition-all">
+        <!-- 玩家資訊與個人榮譽戰績卡片 -->
+        <div class="sticky-player bg-white/95 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-[#e5d2b3] shadow-md space-y-3 transition-all">
           <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3 w-full sm:w-auto">
               <span class="text-xs font-black text-amber-900 uppercase whitespace-nowrap">遊戲 ID / 玩家名稱:</span>
@@ -228,8 +240,8 @@
 
         </div>
 
-        <!-- 實力評定儀表板 (跟隨滑動 sticky top-[260px]) -->
-        <div class="sticky top-[260px] z-20 bg-gradient-to-b from-[#fbf5ea]/95 to-[#f5ebd8]/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-[#e5d2b3] shadow-xl shadow-amber-900/10 relative overflow-hidden transition-all">
+        <!-- 實力評定儀表板 -->
+        <div class="sticky-dashboard bg-gradient-to-b from-[#fbf5ea]/95 to-[#f5ebd8]/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-[#e5d2b3] shadow-xl shadow-amber-900/10 relative overflow-hidden transition-all">
           <div class="absolute -right-16 -top-16 w-64 h-64 bg-amber-200/40 rounded-full blur-3xl pointer-events-none"></div>
           <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -326,6 +338,22 @@
     let globalPlayersData = [];
     let currentTab = 'notice'; 
     let playerHonors = [];
+    let isDesktopSticky = true;
+
+    // 📱/💻 切換版面模式（懸浮 vs 一般滾動）
+    function toggleLayoutMode() {
+      isDesktopSticky = !isDesktopSticky;
+      const appBody = document.getElementById('app-body');
+      const modeBtn = document.getElementById('layout-mode-btn');
+
+      if (isDesktopSticky) {
+        appBody.classList.add('desktop-sticky');
+        modeBtn.innerHTML = "💻 模式: 電腦版(懸浮)";
+      } else {
+        appBody.classList.remove('desktop-sticky');
+        modeBtn.innerHTML = "📱 模式: 手機版(順暢)";
+      }
+    }
 
     // 🖼️ 海報 Modal 控制
     function openPosterModal() {
@@ -374,7 +402,7 @@
     }
 
     function addHonorPrompt() {
-      const honorText = prompt("請輸入您的比賽戰績或輝煌紀錄：\n（例如：s1文山杯 冠軍 / s1雙區賽 冠軍）");
+      const honorText = prompt("請輸入您的比賽戰績或輝煌紀錄：\n（例如：S40 車隊交流賽 冠軍 / 開拓者盃 16強）");
       if (honorText && honorText.trim()) {
         playerHonors.push(honorText.trim());
         renderHonors();
