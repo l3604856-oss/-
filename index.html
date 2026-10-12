@@ -8,6 +8,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- html2canvas 截圖套件 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- Google Fonts: Inter & Noto Sans TC -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -98,8 +100,8 @@
           🏎️
         </div>
         <div>
-          <h1 class="text-xl font-black tracking-tight text-amber-950">S41台服跑跑卡丁車 RUSH+資料庫</h1>
-          <p class="text-xs font-semibold text-amber-800/80">實力分線評定系統 · 雲端測試版</p>
+          <h1 class="text-xl font-black tracking-tight text-amber-950">跑跑卡丁車 RUSH+</h1>
+          <p class="text-xs font-semibold text-amber-800/80">實力分線評定系統 · 雲端排行榜版</p>
         </div>
       </div>
 
@@ -121,7 +123,7 @@
 
   <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
 
-    <!-- 🏷️ 功能切換 Tab 按鈕列 (包含公告、綜合圖池、比賽圖池) -->
+    <!-- 🏷️ 功能切換 Tab 按鈕列 -->
     <div class="flex flex-col sm:flex-row gap-3 mb-6">
       <button onclick="switchTab('notice')" id="tab-notice" class="flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all bg-amber-700 text-white shadow-md flex items-center justify-center gap-2">
         📢 活動公告專區
@@ -130,7 +132,7 @@
         🏁 綜合圖池 (93張賽道)
       </button>
       <button onclick="switchTab('match')" id="tab-match" class="flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all bg-amber-200 text-amber-900 border border-amber-300 hover:bg-amber-300 shadow-xs flex items-center justify-center gap-2">
-        🔥 比賽 / 交流專用圖池(比賽交流常見圖池)
+        🔥 比賽 / 交流專用圖池
       </button>
     </div>
 
@@ -145,7 +147,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-          <!-- 公告文字內容區 -->
           <div class="md:col-span-2 space-y-3 text-sm text-amber-950 font-medium leading-relaxed">
             <p class="font-bold text-amber-900 text-lg">🔥 公告!</p>
             <p>歡迎各位車手填寫分線評定，並將成績同步至雲端與大家交流。</p>
@@ -157,10 +158,9 @@
             </ul>
           </div>
 
-          <!-- 🖼️ 直向活動宣傳圖區 -->
           <div class="flex justify-center">
             <div class="w-48 bg-white/90 border border-amber-300 rounded-xl p-2.5 shadow-sm">
-              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzBSykQYbv72PH-LmVvLNE20QdGqYLq7352y5fo6H5IA&s=10 alt="活動宣傳海報" class="w-full h-72 object-cover rounded-lg border border-amber-200">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzBSykQYbv72PH-LmVvLNE20QdGqYLq7352y5fo6H5IA&s=10" alt="活動宣傳海報" class="w-full h-72 object-cover rounded-lg border border-amber-200">
               <div class="text-xs text-center font-bold text-amber-800 mt-2">試做預覽圖</div>
             </div>
           </div>
@@ -168,82 +168,111 @@
       </div>
     </div>
 
-    <!-- 🎮 評定系統主容器 (點擊綜合圖池或比賽圖池才會顯示) -->
+    <!-- 🎮 評定系統主容器 -->
     <div id="rating-system-section" class="hidden">
-      <!-- 玩家資訊與雲端同步卡片 -->
-      <div class="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-[#e5d2b3] shadow-md mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-          <span class="text-xs font-black text-amber-900 uppercase whitespace-nowrap">遊戲 ID / 玩家名稱:</span>
-          <input type="text" id="player-name-input" placeholder="例如：R2S_Soda" class="w-full sm:w-64 px-3.5 py-2 bg-[#fbf5eb] border border-[#e0cbab] rounded-xl text-amber-950 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30">
-        </div>
-        <div class="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
-          <button onclick="saveScoreToCloud()" class="px-4 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white font-black text-xs rounded-xl shadow-md transition-all">
-            ☁️ 儲存成績
-          </button>
-          <button onclick="resetAllSelections()" class="px-4 py-2.5 bg-rose-100 hover:bg-rose-200 text-rose-900 font-bold text-xs rounded-xl border border-rose-300 transition-all">
-            🔄 重製選項
-          </button>
-          <button onclick="openLeaderboard()" class="px-4 py-2.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs rounded-xl border border-amber-300 transition-all">
-            🏆 各玩家資訊
-          </button>
-        </div>
-      </div>
-
-      <!-- 實力評定儀表板 -->
-      <div class="sticky top-[69px] z-40 bg-gradient-to-b from-[#fbf5ea]/95 to-[#f5ebd8]/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-[#e5d2b3] shadow-xl shadow-amber-900/10 mb-8 relative overflow-hidden">
-        <div class="absolute -right-16 -top-16 w-64 h-64 bg-amber-200/40 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between border-b border-[#e8d5b7] pb-6 mb-6 gap-4">
-          <div>
-            <span id="current-pool-badge" class="inline-block text-xs font-extrabold uppercase tracking-wider text-amber-800 bg-[#eee0c9] px-3 py-1 rounded-md border border-[#e0cbab] mb-2 shadow-2xs">綜合圖池評定</span>
-            <div class="text-xs font-bold text-amber-800/70 uppercase">目前綜合實力評級</div>
-            <div id="rank-title" class="text-3xl sm:text-4xl font-black text-amber-950 tracking-tight mt-1 transition-all duration-300">
-              請選擇賽道成績
+      
+      <!-- 📸 截圖匯出專用包裝區塊 -->
+      <div id="capture-area" class="space-y-6 bg-[#fbf3e4] p-2 rounded-2xl">
+        
+        <!-- 玩家資訊與個人榮譽戰績卡片 -->
+        <div class="bg-white/80 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-[#e5d2b3] shadow-md space-y-3">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+              <span class="text-xs font-black text-amber-900 uppercase whitespace-nowrap">遊戲 ID / 玩家名稱:</span>
+              <input type="text" id="player-name-input" placeholder="例如：R2S_Soda" class="w-full sm:w-64 px-3.5 py-2 bg-[#fbf5eb] border border-[#e0cbab] rounded-xl text-amber-950 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30">
+            </div>
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
+              <button onclick="captureFullPage()" id="capture-btn" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5">
+                📸 截圖匯出圖表
+              </button>
+              <button onclick="saveScoreToCloud()" class="px-4 py-2.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white font-black text-xs rounded-xl shadow-md transition-all">
+                ☁️ 儲存成績
+              </button>
+              <button onclick="resetAllSelections()" class="px-4 py-2.5 bg-rose-100 hover:bg-rose-200 text-rose-900 font-bold text-xs rounded-xl border border-rose-300 transition-all">
+                🔄 重製選項
+              </button>
+              <button onclick="openLeaderboard()" class="px-4 py-2.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs rounded-xl border border-amber-300 transition-all">
+                🏆 排行榜
+              </button>
             </div>
           </div>
-          <div class="text-left md:text-right">
-            <div class="text-xs font-bold text-amber-800/70 uppercase tracking-wider">評定進度</div>
-            <div id="stats-text" class="text-sm font-bold text-amber-900 mt-1">
-              已完成 <span id="completed-count" class="text-amber-700 text-lg font-black">0</span> / <span id="total-track-count">93</span> 張賽道評定
+
+          <!-- 🏆 個人比賽榮譽戰績（成就牆）區塊 -->
+          <div class="pt-2 border-t border-amber-100">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-black text-amber-900 flex items-center gap-1">
+                🏆 比賽輝煌戰績 / 榮譽勳章:
+              </span>
+              <button onclick="addHonorPrompt()" class="px-2.5 py-1 text-[11px] font-bold bg-amber-100 text-amber-900 rounded-lg hover:bg-amber-200 border border-amber-300 transition-all">
+                + 新增戰績
+              </button>
+            </div>
+            <!-- 戰績標籤容器 -->
+            <div id="honor-tags-container" class="flex flex-wrap gap-2">
+              <span class="text-xs text-amber-800/60 font-medium italic" id="no-honors-tip">尚未填寫比賽戰績，點擊右上角新增！</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 實力評定儀表板 -->
+        <div class="bg-gradient-to-b from-[#fbf5ea]/95 to-[#f5ebd8]/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-[#e5d2b3] shadow-xl shadow-amber-900/10 relative overflow-hidden">
+          <div class="absolute -right-16 -top-16 w-64 h-64 bg-amber-200/40 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between border-b border-[#e8d5b7] pb-6 mb-6 gap-4">
+            <div>
+              <span id="current-pool-badge" class="inline-block text-xs font-extrabold uppercase tracking-wider text-amber-800 bg-[#eee0c9] px-3 py-1 rounded-md border border-[#e0cbab] mb-2 shadow-2xs">綜合圖池評定</span>
+              <div class="text-xs font-bold text-amber-800/70 uppercase">目前綜合實力評級</div>
+              <div id="rank-title" class="text-3xl sm:text-4xl font-black text-amber-950 tracking-tight mt-1 transition-all duration-300">
+                請選擇賽道成績
+              </div>
+            </div>
+            <div class="text-left md:text-right">
+              <div class="text-xs font-bold text-amber-800/70 uppercase tracking-wider">評定進度</div>
+              <div id="stats-text" class="text-sm font-bold text-amber-900 mt-1">
+                已完成 <span id="completed-count" class="text-amber-700 text-lg font-black">0</span> / <span id="total-track-count">93</span> 張賽道評定
+              </div>
+            </div>
+          </div>
+
+          <div class="relative pt-8 pb-2">
+            <div id="pointer" class="absolute top-0 left-0 -translate-x-1/2 transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) pointer-shadow z-20 flex flex-col items-center" style="left: 0%;">
+              <div class="bg-rose-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow-md whitespace-nowrap mb-1 border border-rose-400" id="score-tag">
+                - 分
+              </div>
+              <div class="w-4 h-4 bg-rose-600 rotate-45 rounded-xs border-2 border-white"></div>
+            </div>
+
+            <div class="h-11 w-full rounded-xl p-1 bg-[#ebd3b0] border border-[#d2b892] shadow-inner flex gap-1">
+              <div class="flex-1 rounded-lg bg-[#32b5f6] flex items-center justify-center text-xs font-black text-white shadow-2xs">Top</div>
+              <div class="flex-1 rounded-lg bg-[#3cbda2] flex items-center justify-center text-xs font-black text-white shadow-2xs">強主</div>
+              <div class="flex-1 rounded-lg bg-[#53c870] flex items-center justify-center text-xs font-black text-white shadow-2xs">主力</div>
+              <div class="flex-1 rounded-lg bg-[#82d854] flex items-center justify-center text-xs font-black text-white shadow-2xs">一線</div>
+              <div class="flex-1 rounded-lg bg-[#bce65d] flex items-center justify-center text-xs font-black text-slate-800 shadow-2xs">二線</div>
+              <div class="flex-1 rounded-lg bg-[#fcd45a] flex items-center justify-center text-xs font-black text-slate-800 shadow-2xs">三線</div>
+              <div class="flex-1 rounded-lg bg-[#f97316] flex items-center justify-center text-xs font-black text-white shadow-2xs">娛樂</div>
             </div>
           </div>
         </div>
 
-        <div class="relative pt-8 pb-2">
-          <div id="pointer" class="absolute top-0 left-0 -translate-x-1/2 transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) pointer-shadow z-20 flex flex-col items-center" style="left: 0%;">
-            <div class="bg-rose-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow-md whitespace-nowrap mb-1 border border-rose-400" id="score-tag">
-              - 分
-            </div>
-            <div class="w-4 h-4 bg-rose-600 rotate-45 rounded-xs border-2 border-white"></div>
+        <!-- 搜尋與過濾區 -->
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-amber-700/60">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
           </div>
-
-          <div class="h-11 w-full rounded-xl p-1 bg-[#ebd3b0] border border-[#d2b892] shadow-inner flex gap-1">
-            <div class="flex-1 rounded-lg bg-[#32b5f6] flex items-center justify-center text-xs font-black text-white shadow-2xs">Top</div>
-            <div class="flex-1 rounded-lg bg-[#3cbda2] flex items-center justify-center text-xs font-black text-white shadow-2xs">強主</div>
-            <div class="flex-1 rounded-lg bg-[#53c870] flex items-center justify-center text-xs font-black text-white shadow-2xs">主力</div>
-            <div class="flex-1 rounded-lg bg-[#82d854] flex items-center justify-center text-xs font-black text-white shadow-2xs">一線</div>
-            <div class="flex-1 rounded-lg bg-[#bce65d] flex items-center justify-center text-xs font-black text-slate-800 shadow-2xs">二線</div>
-            <div class="flex-1 rounded-lg bg-[#fcd45a] flex items-center justify-center text-xs font-black text-slate-800 shadow-2xs">三線</div>
-            <div class="flex-1 rounded-lg bg-[#f97316] flex items-center justify-center text-xs font-black text-white shadow-2xs">娛樂</div>
-          </div>
+          <input type="text" id="searchInput" oninput="filterTracks()"
+            placeholder="搜尋賽道名稱..."
+            class="w-full pl-11 pr-4 py-3.5 bg-[#fbf5eb] border border-[#e0cbab] rounded-xl text-amber-950 placeholder-amber-800/40 font-semibold shadow-2xs focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all">
         </div>
+
+        <!-- 賽道列表容器 -->
+        <div id="tracks-list" class="space-y-4"></div>
+
       </div>
 
-      <!-- 搜尋與過濾區 -->
-      <div class="relative mb-6">
-        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-amber-700/60">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </div>
-        <input type="text" id="searchInput" oninput="filterTracks()"
-          placeholder="搜尋賽道名稱..."
-          class="w-full pl-11 pr-4 py-3.5 bg-[#fbf5eb] border border-[#e0cbab] rounded-xl text-amber-950 placeholder-amber-800/40 font-semibold shadow-2xs focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all">
-      </div>
-
-      <!-- 賽道列表容器 -->
-      <div id="tracks-list" class="space-y-4"></div>
     </div>
 
   </main>
@@ -269,7 +298,8 @@
 
     let currentUser = null;
     let globalPlayersData = [];
-    let currentTab = 'notice'; // 預設顯示公告區
+    let currentTab = 'notice'; 
+    let playerHonors = []; // 儲存玩家戰績陣列
 
     async function checkUser() {
       const { data: { session } } = await supabaseClient.auth.getSession();
@@ -304,6 +334,41 @@
     async function handleLogout() {
       await supabaseClient.auth.signOut();
       window.location.reload();
+    }
+
+    // 🏆 新增比賽戰績提示
+    function addHonorPrompt() {
+      const honorText = prompt("請輸入您的比賽戰績或輝煌紀錄：\n（例如：S40 車隊交流賽 冠軍 / 開拓者盃 16強）");
+      if (honorText && honorText.trim()) {
+        playerHonors.push(honorText.trim());
+        renderHonors();
+      }
+    }
+
+    // 🏆 移除指定戰績
+    function removeHonor(index) {
+      playerHonors.splice(index, 1);
+      renderHonors();
+    }
+
+    // 🏆 渲染戰績標籤列
+    function renderHonors() {
+      const container = document.getElementById('honor-tags-container');
+      if (playerHonors.length === 0) {
+        container.innerHTML = `<span class="text-xs text-amber-800/60 font-medium italic" id="no-honors-tip">尚未填寫比賽戰績，點擊右上角新增！</span>`;
+        return;
+      }
+
+      let html = '';
+      playerHonors.forEach((honor, idx) => {
+        html += `
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-extrabold text-xs rounded-lg shadow-2xs">
+            🥇 ${honor}
+            <button onclick="removeHonor(${idx})" class="hover:text-rose-200 font-bold ml-1">✕</button>
+          </span>
+        `;
+      });
+      container.innerHTML = html;
     }
 
     const tierLabels = ["Top", "強主", "主力", "一線", "二線", "三線", "娛樂"];
@@ -466,7 +531,6 @@
       const badge = document.getElementById('current-pool-badge');
       const totalCountSpan = document.getElementById('total-track-count');
 
-      // 重設所有按鈕樣式為未選取狀態
       const inactiveBtnClass = "flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all bg-amber-200 text-amber-900 border border-amber-300 hover:bg-amber-300 shadow-xs flex items-center justify-center gap-2";
       btnNotice.className = inactiveBtnClass;
       btnAll.className = inactiveBtnClass;
@@ -610,6 +674,50 @@
       renderTracks(query);
     }
 
+    // 📸 一鍵截圖並匯出圖片功能
+    async function captureFullPage() {
+      const captureArea = document.getElementById("capture-area");
+      const captureBtn = document.getElementById("capture-btn");
+      const searchInput = document.getElementById("searchInput");
+      
+      const originalQuery = searchInput.value;
+      if (originalQuery) {
+        searchInput.value = "";
+        renderTracks();
+      }
+
+      captureBtn.innerText = "⏳ 正在產生圖片...";
+      captureBtn.disabled = true;
+
+      try {
+        const canvas = await html2canvas(captureArea, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#fbf3e4'
+        });
+
+        const imageURL = canvas.toDataURL("image/png");
+        const downloadLink = document.createElement("a");
+        const playerName = document.getElementById("player-name-input").value.trim() || "未命名車手";
+        const poolName = currentTab === 'all' ? "綜合圖池" : "比賽專用圖池";
+        
+        downloadLink.download = `跑跑卡丁車_${poolName}_${playerName}評定表.png`;
+        downloadLink.href = imageURL;
+        downloadLink.click();
+      } catch (err) {
+        console.error(err);
+        alert("截圖失敗，請稍後再試！");
+      } finally {
+        if (originalQuery) {
+          searchInput.value = originalQuery;
+          renderTracks(originalQuery);
+        }
+        captureBtn.innerText = "📸 截圖匯出圖表";
+        captureBtn.disabled = false;
+      }
+    }
+
+    // ☁️ 儲存成績與榮譽戰績至 Supabase
     async function saveScoreToCloud() {
       if (!currentUser) { alert('請先登入帳號才能儲存成績至雲端！'); return; }
       const playerName = document.getElementById('player-name-input').value.trim();
@@ -621,6 +729,7 @@
       const upsertData = {
         user_id: currentUser.id,
         player_name: playerName,
+        honors: playerHonors, // 寫入榮譽戰績
         updated_at: new Date()
       };
 
@@ -635,9 +744,10 @@
       const { error } = await supabaseClient.from('player_scores').upsert(upsertData, { onConflict: 'user_id' });
 
       if (error) alert('儲存失敗: ' + error.message);
-      else alert('🎉 成功將 [' + (currentTab === 'all' ? '綜合圖池' : '比賽專用圖池') + '] 成績儲存至雲端！');
+      else alert('🎉 成功將 [' + (currentTab === 'all' ? '綜合圖池' : '比賽專用圖池') + '] 與戰績榮譽儲存至雲端！');
     }
 
+    // ☁️ 讀取雲端資料（包含戰績）
     async function loadScoreFromCloud() {
       if (!currentUser) return;
       const { data, error } = await supabaseClient
@@ -648,6 +758,10 @@
 
       if (data) {
         document.getElementById('player-name-input').value = data.player_name || '';
+        if (data.honors && Array.isArray(data.honors)) {
+          playerHonors = data.honors;
+          renderHonors();
+        }
         if (data.selections) {
           Object.assign(selectionsAll, data.selections);
         }
@@ -659,6 +773,7 @@
       }
     }
 
+    // 🏆 打開排行榜（顯示玩家榮譽戰績）
     async function openLeaderboard() {
       const modal = document.getElementById('leaderboard-modal');
       const listContainer = document.getElementById('leaderboard-list');
@@ -698,6 +813,14 @@
         else if (score >= 20) rankBadge = "🚗 二線車手";
         else if (score >= 10) rankBadge = "🌱 三線車手";
 
+        // 處理榮譽戰績 HTML
+        let honorsHtml = '';
+        if (player.honors && Array.isArray(player.honors) && player.honors.length > 0) {
+          honorsHtml = `<div class="flex flex-wrap gap-1 mt-1">` + 
+            player.honors.map(h => `<span class="px-2 py-0.5 bg-amber-600 text-white font-extrabold text-[10px] rounded-md">🥇 ${h}</span>`).join('') +
+            `</div>`;
+        }
+
         html += `
           <div class="p-3 bg-white/90 border border-amber-200 rounded-xl shadow-2xs space-y-2">
             <div class="flex items-center justify-between">
@@ -706,6 +829,7 @@
                 <div>
                   <div class="font-extrabold text-amber-950 text-sm">${player.player_name || '未命名車手'}</div>
                   <div class="text-[11px] font-bold text-amber-800/70">${rankBadge}</div>
+                  ${honorsHtml}
                 </div>
               </div>
               <div class="flex items-center gap-3">
