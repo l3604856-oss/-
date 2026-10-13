@@ -242,6 +242,12 @@
 
         <!-- 實力評定儀表板 -->
         <div class="sticky-dashboard bg-gradient-to-b from-[#fbf5ea]/95 to-[#f5ebd8]/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-[#e5d2b3] shadow-xl shadow-amber-900/10 relative overflow-hidden transition-all">
+          <!-- 💡 賽道秒數說明提示（依據當前分頁動態顯示或隱藏） -->
+          <div id="pool-specific-notice" class="hidden mb-4 p-3 bg-amber-100/80 border border-amber-300 rounded-xl text-xs font-bold text-amber-900 flex items-center gap-2">
+            <span class="text-rose-600 text-sm">🔥</span>
+            <span>PS: 實戰跑得出來 or 曾經實戰有跑出來過！</span>
+          </div>
+
           <div class="absolute -right-16 -top-16 w-64 h-64 bg-amber-200/40 rounded-full blur-3xl pointer-events-none"></div>
           <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -269,7 +275,8 @@
               <div class="w-4 h-4 bg-rose-600 rotate-45 rounded-xs border-2 border-white"></div>
             </div>
 
-            <div class="h-11 w-full rounded-xl p-1 bg-[#ebd3b0] border border-[#d2b892] shadow-inner flex gap-1">
+            <!-- 級距的動態 Grid 條 -->
+            <div id="dashboard-bars" class="h-11 w-full rounded-xl p-1 bg-[#ebd3b0] border border-[#d2b892] shadow-inner flex gap-1">
               <div class="flex-1 rounded-lg bg-[#32b5f6] flex items-center justify-center text-xs font-black text-white shadow-2xs">Top</div>
               <div class="flex-1 rounded-lg bg-[#3cbda2] flex items-center justify-center text-xs font-black text-white shadow-2xs">強主</div>
               <div class="flex-1 rounded-lg bg-[#53c870] flex items-center justify-center text-xs font-black text-white shadow-2xs">主力</div>
@@ -433,8 +440,17 @@
       container.innerHTML = html;
     }
 
-    const tierLabels = ["Top", "強主", "主力", "一線", "二線", "三線", "娛樂"];
-    const tierScores = [100, 80, 60, 40, 20, 10, 0];
+    // 綜合圖池的 7 個級距
+    const tierLabelsAll = ["Top", "強主", "主力", "一線", "二線", "三線", "娛樂"];
+    const tierScoresAll = [100, 83.3, 66.6, 50, 33.3, 16.6, 0];
+
+    // 比賽圖池的 6 個級距（無娛樂）
+    const tierLabelsMatch = ["Top", "強主", "主力", "一線", "二線", "三線"];
+    const tierScoresMatch = [100, 80, 60, 40, 20, 0];
+
+    function getCurrentTierLabels() {
+      return currentTab === 'all' ? tierLabelsAll : tierLabelsMatch;
+    }
 
     const groupStyles = {
       yellow: { bg: "bg-[#fff8d6] border-[#f0e2a3]", title: "text-amber-950" },
@@ -554,24 +570,40 @@
       { name: "繁榮山丘", group: "red", times: ["3.06.29", "3.08.99", "3.12.29", "3.15.79", "3.19.79", "3.23.99"] },
       { name: "地下墓穴", group: "red", times: ["2.42.29", "2.44.29", "2.46.99", "2.50.29", "2.53.49", "2.57.29"] },
       { name: "N被遺忘的沙之記憶", group: "red", times: ["2.19.49", "2.21.49", "2.23.49", "2.26.49", "2.29.49", "2.32.79"] } 
-    
     ];
 
+    // 綜合圖池：帶入 7 個級距（含娛樂）
     const rawDataAll = initialData.map((track, idx) => {
       const newTimes = [...track.times];
       newTimes.push(entertainmentTimes[idx] || "-");
       return { ...track, times: newTimes };
     });
 
-    const matchTrackNames = [
-      "龍之運河", "拉薩", "杜拜富人區", "布羅帝研究所", "命運之橋", "魔女城",
-      "太空走廊", "城堡", "危險機關", "刀劍雲中峽谷", "雙工廠", "黃金文明座標",
-      "中華胡同", "鯊魚島", "森林吊橋", "停機坪", "恐龍島", "太空蜿蜒", "五區", "R森髮", "精煉廠", "魔王邀請"
+    // 比賽圖池專用：指定您要的 22 張賽道與您提供的最新 6 個級距秒數（無娛樂按鈕）
+    const matchCustomData = [
+      { name: "龍之運河", group: "yellow", times: ["1.49.99", "1.51.49", "1.51.99", "1.53.49", "1.55.49", "1.56.99"] },
+      { name: "拉薩", group: "yellow", times: ["1.34.99", "1.35.99", "1.36.99", "1.37.99", "1.38.99", "1.40.49"] },
+      { name: "杜拜富人區", group: "green", times: ["1.31.99", "1.32.99", "1.33.99", "1.34.99", "1.35.99", "1.36.99"] },
+      { name: "布羅帝研究所", group: "green", times: ["1.51.49", "1.52.49", "1.53.49", "1.54.99", "1.55.99", "1.57.49"] },
+      { name: "命運之橋", group: "green", times: ["1.48.49", "1.49.49", "1.50.99", "1.51.99", "1.53.49", "1.55.49"] },
+      { name: "魔女城", group: "green", times: ["1.43.99", "1.44.99", "1.46.49", "1.47.99", "1.49.49", "1.51.49"] },
+      { name: "太空走廊", group: "green", times: ["1.44.99", "1.45.99", "1.47.49", "1.48.99", "1.50.49", "1.51.99"] },
+      { name: "城堡", group: "blue", times: ["1.44.49", "1.46.49", "1.47.99", "1.49.49", "1.50.99", "1.52.99"] },
+      { name: "危險機關", group: "blue", times: ["1.37.99", "1.39.49", "1.40.99", "1.42.99", "1.44.99", "1.46.99"] },
+      { name: "刀劍雲中峽谷", group: "blue", times: ["1.26.49", "1.26.99", "1.27.99", "1.29.49", "1.30.99", "1.32.99"] },
+      { name: "雙工廠", group: "blue", times: ["1.38.99", "1.39.99", "1.41.49", "1.42.99", "1.44.49", "1.45.99"] },
+      { name: "黃金文明座標", group: "blue", times: ["1.23.49", "1.24.49", "1.25.49", "1.26.99", "1.28.99", "1.30.99"] },
+      { name: "中華胡同", group: "blue", times: ["1.52.49", "1.53.49", "1.54.49", "1.55.99", "1.57.49", "1.59.49"] },
+      { name: "鯊魚島", group: "blue", times: ["2.00.49", "2.01.99", "2.03.49", "2.04.99", "2.06.49", "2.08.49"] },
+      { name: "森林吊橋", group: "blue", times: ["1.52.49", "1.53.49", "1.54.99", "1.56.49", "1.58.49", "2.00.49"] },
+      { name: "停機坪", group: "blue", times: ["1.51.99", "1.52.99", "1.54.49", "1.55.99", "1.57.99", "1.59.99"] },
+      { name: "恐龍島", group: "blue", times: ["1.39.49", "1.40.99", "1.42.49", "1.43.99", "1.45.49", "1.47.49"] },
+      { name: "太空蜿蜒", group: "red", times: ["1.40.49", "1.41.49", "1.43.49", "1.44.99", "1.46.99", "1.48.99"] },
+      { name: "五區", group: "red", times: ["1.07.49", "1.08.49", "1.09.99", "1.10.99", "1.11.99", "1.13.49"] },
+      { name: "R森髮", group: "red", times: ["1.53.49", "1.54.49", "1.55.49", "1.58.49", "2.00.49", "2.02.99"] },
+      { name: "精煉廠", group: "red", times: ["1.56.49", "1.57.49", "1.59.49", "2.01.49", "2.03.99", "2.06.99"] },
+      { name: "魔王邀請", group: "red", times: ["1.34.49", "1.35.99", "1.37.49", "1.38.99", "1.40.99", "1.42.99"] }
     ];
-
-    const rawDataMatch = matchTrackNames.map(name => {
-      return rawDataAll.find(t => t.name === name);
-    }).filter(Boolean);
 
     let selectionsAll = {};
     let selectionsMatch = {};
@@ -581,7 +613,7 @@
     }
 
     function getCurrentRawData() {
-      return currentTab === 'all' ? rawDataAll : rawDataMatch;
+      return currentTab === 'all' ? rawDataAll : matchCustomData;
     }
 
     function switchTab(tab) {
@@ -593,6 +625,8 @@
       const ratingSystemSection = document.getElementById('rating-system-section');
       const badge = document.getElementById('current-pool-badge');
       const totalCountSpan = document.getElementById('total-track-count');
+      const dashboardBars = document.getElementById('dashboard-bars');
+      const poolSpecificNotice = document.getElementById('pool-specific-notice');
 
       const inactiveBtnClass = "flex-1 py-3 px-4 rounded-xl font-black text-sm transition-all bg-amber-200 text-amber-900 border border-amber-300 hover:bg-amber-300 shadow-xs flex items-center justify-center gap-2";
       btnNotice.className = inactiveBtnClass;
@@ -613,10 +647,29 @@
           btnAll.className = activeBtnClass;
           badge.innerText = "綜合圖池評定";
           totalCountSpan.innerText = rawDataAll.length;
+          poolSpecificNotice.classList.add('hidden'); // 綜合圖池隱藏提示
+          dashboardBars.innerHTML = `
+            <div class="flex-1 rounded-lg bg-[#32b5f6] flex items-center justify-center text-xs font-black text-white shadow-2xs">Top</div>
+            <div class="flex-1 rounded-lg bg-[#3cbda2] flex items-center justify-center text-xs font-black text-white shadow-2xs">強主</div>
+            <div class="flex-1 rounded-lg bg-[#53c870] flex items-center justify-center text-xs font-black text-white shadow-2xs">主力</div>
+            <div class="flex-1 rounded-lg bg-[#82d854] flex items-center justify-center text-xs font-black text-white shadow-2xs">一線</div>
+            <div class="flex-1 rounded-lg bg-[#bce65d] flex items-center justify-center text-xs font-black text-slate-800 shadow-2xs">二線</div>
+            <div class="flex-1 rounded-lg bg-[#fcd45a] flex items-center justify-center text-xs font-black text-slate-800 shadow-2xs">三線</div>
+            <div class="flex-1 rounded-lg bg-[#f97316] flex items-center justify-center text-xs font-black text-white shadow-2xs">娛樂</div>
+          `;
         } else {
           btnMatch.className = activeBtnClass;
           badge.innerText = "比賽 / 交流專用圖池評定";
-          totalCountSpan.innerText = rawDataMatch.length;
+          totalCountSpan.innerText = matchCustomData.length;
+          poolSpecificNotice.classList.remove('hidden'); // 比賽圖池顯示提示
+          dashboardBars.innerHTML = `
+            <div class="flex-1 rounded-lg bg-[#32b5f6] flex items-center justify-center text-xs font-black text-white shadow-2xs">Top</div>
+            <div class="flex-1 rounded-lg bg-[#3cbda2] flex items-center justify-center text-xs font-black text-white shadow-2xs">強主</div>
+            <div class="flex-1 rounded-lg bg-[#53c870] flex items-center justify-center text-xs font-black text-white shadow-2xs">主力</div>
+            <div class="flex-1 rounded-lg bg-[#82d854] flex items-center justify-center text-xs font-black text-white shadow-2xs">一線</div>
+            <div class="flex-1 rounded-lg bg-[#bce65d] flex items-center justify-center text-xs font-black text-slate-800 shadow-2xs">二線</div>
+            <div class="flex-1 rounded-lg bg-[#fcd45a] flex items-center justify-center text-xs font-black text-slate-800 shadow-2xs">三線</div>
+          `;
         }
 
         document.getElementById("searchInput").value = "";
@@ -630,6 +683,7 @@
       container.innerHTML = "";
       const currentData = getCurrentRawData();
       const currentSelections = getCurrentSelections();
+      const tierLabels = getCurrentTierLabels();
 
       currentData.forEach((track, index) => {
         if (filterText && !track.name.toLowerCase().includes(filterText.toLowerCase())) {
@@ -653,7 +707,7 @@
               : `<span class="text-xs font-semibold text-slate-500/70">未選擇</span>`
             }
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+          <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-${tierLabels.length} gap-2">
         `;
 
         track.times.forEach((t, tierIdx) => {
@@ -702,6 +756,7 @@
       const currentSelections = getCurrentSelections();
       const selectedIndices = Object.values(currentSelections);
       const totalAnswered = selectedIndices.length;
+      const tierScores = currentTab === 'all' ? tierScoresAll : tierScoresMatch;
       
       document.getElementById("completed-count").innerText = totalAnswered;
 
@@ -863,6 +918,7 @@
       }
 
       globalPlayersData = data;
+      const tierLabels = getCurrentTierLabels();
 
       let html = `<div class="text-xs font-bold text-amber-800 mb-2">目前顯示：${currentTab === 'all' ? '🏁 綜合圖池排行榜' : '🔥 比賽專用圖池排行榜'}（共 ${data.length} 位車手）</div>`;
       data.forEach((player, idx) => {
@@ -927,6 +983,7 @@
       const player = globalPlayersData.find(p => p.user_id === userId);
       const targetSelections = currentTab === 'all' ? player.selections : player.match_selections;
       const targetRawData = getCurrentRawData();
+      const tierLabels = getCurrentTierLabels();
 
       if (!player || !targetSelections) {
         contentEl.innerHTML = '<div class="text-amber-800/60">該車手尚未在此圖池填寫詳細評定</div>';
