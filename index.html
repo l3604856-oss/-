@@ -105,8 +105,8 @@
           🏎️
         </div>
         <div>
-          <h1 class="text-xl font-black tracking-tight text-amber-950">S42台服跑跑卡丁車RUSH+資料庫</h1>
-          <p class="text-xs font-semibold text-amber-800/80">實力分線評定系統 · 雲端儲存版</p>
+          <h1 class="text-xl font-black tracking-tight text-amber-950">S41台服跑跑卡丁車RUSH+資料庫</h1>
+          <p class="text-xs font-semibold text-amber-800/80">實力分線評定系統 · 測試版</p>
         </div>
       </div>
 
@@ -176,15 +176,15 @@
           <div class="flex justify-center">
             <div class="w-52 bg-white/90 border border-amber-300 rounded-xl p-3 shadow-md hover:shadow-lg transition-all space-y-2">
               <div class="relative group cursor-pointer overflow-hidden rounded-lg border border-amber-200" onclick="openPosterModal()">
-                <img id="notice-poster-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcUQ_kqRkx9nEQJ59k2lw856mvm3VbSishoiWqKF9b4g&s=10" alt="文山盃賽事海報" class="w-full h-72 object-cover transition-transform duration-300 group-hover:scale-105">
+                <img id="notice-poster-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzBSykQYbv72PH-LmVvLNE20QdGqYLq7352y5fo6H5IA&s=10" alt="文山盃賽事海報" class="w-full h-72 object-cover transition-transform duration-300 group-hover:scale-105">
                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white font-bold text-xs gap-1">
                   🔍 點擊查看大圖
                 </div>
               </div>
-              <div class="text-xs text-center font-extrabold text-amber-900">🏆 微賽交流群</div>
+              <div class="text-xs text-center font-extrabold text-amber-900">🏆 文山盃賽事圖池海報</div>
               
               <!-- 🔗 前往活動連結按鈕 -->
-              <a href="https://line.me/ti/g2/uVG8WF-BB7iAfoWc8TIJVdQ-rbUwxhYpojZS-Q?utm_source=invitation&utm_medium=link_copy&utm_campaign=default" target="_blank" rel="noopener noreferrer" class="w-full py-1.5 px-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white font-bold text-xs rounded-lg shadow-2xs flex items-center justify-center gap-1 transition-all">
+              <a href="https://discord.gg/" target="_blank" rel="noopener noreferrer" class="w-full py-1.5 px-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white font-bold text-xs rounded-lg shadow-2xs flex items-center justify-center gap-1 transition-all">
                 🔗 前往活動連結
               </a>
             </div>
@@ -385,6 +385,10 @@
         document.getElementById('logged-out-view').classList.add('hidden');
         document.getElementById('logged-in-view').classList.remove('hidden');
         document.getElementById('user-display-email').innerText = currentUser.email;
+        loadScoreFromCloud();
+      } else {
+        // 若未登入，嘗試從本地瀏覽器載入暫存紀錄
+        loadLocalSelections();
       }
       // 每次開啟網頁時先抓取全服最速台服紀錄
       await fetchGlobalTaiwanRecords();
@@ -407,7 +411,6 @@
             
             if (!timeStr) continue;
 
-            // 簡單秒數字串比對（若無紀錄或新秒數較快則更新）
             if (!globalBestTaiwanRecords[trackIdx] || timeStr < globalBestTaiwanRecords[trackIdx].time) {
               globalBestTaiwanRecords[trackIdx] = { time: timeStr, player: playerName };
             }
@@ -631,6 +634,38 @@
       return currentTab === 'all' ? rawDataAll : matchCustomData;
     }
 
+    // 💾 讀取本地暫存選擇 (localStorage)
+    function loadLocalSelections() {
+      try {
+        const savedAll = localStorage.getItem('kart_selections_all');
+        const savedMatch = localStorage.getItem('kart_selections_match');
+        const savedRecs = localStorage.getItem('kart_taiwan_recs');
+        const savedPlayer = localStorage.getItem('kart_player_name');
+
+        if (savedAll) selectionsAll = JSON.parse(savedAll);
+        if (savedMatch) selectionsMatch = JSON.parse(savedMatch);
+        if (savedRecs) taiwanRecordsAll = JSON.parse(savedRecs);
+        if (savedPlayer && !document.getElementById('player-name-input').value) {
+          document.getElementById('player-name-input').value = savedPlayer;
+        }
+      } catch (e) {
+        console.error("載入本地暫存失敗", e);
+      }
+    }
+
+    // 💾 儲存選擇至本地暫存 (localStorage)
+    function saveLocalSelections() {
+      try {
+        localStorage.setItem('kart_selections_all', JSON.stringify(selectionsAll));
+        localStorage.setItem('kart_selections_match', JSON.stringify(selectionsMatch));
+        localStorage.setItem('kart_taiwan_recs', JSON.stringify(taiwanRecordsAll));
+        const playerName = document.getElementById('player-name-input').value.trim();
+        if (playerName) localStorage.setItem('kart_player_name', playerName);
+      } catch (e) {
+        console.error("儲存本地暫存失敗", e);
+      }
+    }
+
     function switchTab(tab) {
       currentTab = tab;
       const btnNotice = document.getElementById('tab-notice');
@@ -672,7 +707,6 @@
             <div class="flex-1 rounded-lg bg-[#fcd45a] flex items-center justify-center text-xs font-black text-slate-800 shadow-2xs">三線</div>
             <div class="flex-1 rounded-lg bg-[#f97316] flex items-center justify-center text-xs font-black text-white shadow-2xs">娛樂</div>
           `;
-          // 每次切換到綜合圖池時重新抓取全服最速紀錄
           fetchGlobalTaiwanRecords();
         } else {
           btnMatch.className = activeBtnClass;
@@ -713,7 +747,6 @@
         
         let taiwanRecordHtml = '';
         if (currentTab === 'all') {
-          // 優先顯示從全服資料抓到的最快紀錄，若無則顯示個人目前編輯的
           const globalBest = globalBestTaiwanRecords[index];
           const recObj = taiwanRecordsAll[index] || {};
           const recPlayer = globalBest ? globalBest.player : (recObj.player || '');
@@ -787,6 +820,7 @@
       if (!taiwanRecordsAll[trackIdx].player && !taiwanRecordsAll[trackIdx].time) {
         delete taiwanRecordsAll[trackIdx];
       }
+      saveLocalSelections();
       renderTracks(document.getElementById("searchInput").value);
     }
 
@@ -797,6 +831,7 @@
       } else {
         currentSelections[trackIdx] = tierIdx;
       }
+      saveLocalSelections();
       renderTracks(document.getElementById("searchInput").value);
       calculateRank();
     }
@@ -811,6 +846,7 @@
         if (currentTab === 'all') {
           for (let key in taiwanRecordsAll) { delete taiwanRecordsAll[key]; }
         }
+        saveLocalSelections();
         renderTracks(document.getElementById("searchInput").value);
         calculateRank();
       }
