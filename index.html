@@ -347,8 +347,10 @@
     let playerHonors = [];
     let isDesktopSticky = true;
     
-    // 僅限綜合圖池的台服紀錄物件 (key: 賽道索引, value: { player: 玩家名稱, time: 秒數 })
+    // 個人編輯的台服紀錄
     let taiwanRecordsAll = {};
+    // 全伺服器彙整後的台服最速紀錄 (key: 賽道索引, value: { player, time })
+    let globalBestTaiwanRecords = {};
 
     // 📱/💻 切換版面模式（懸浮 vs 一般滾動）
     function toggleLayoutMode() {
@@ -383,10 +385,40 @@
         document.getElementById('logged-out-view').classList.add('hidden');
         document.getElementById('logged-in-view').classList.remove('hidden');
         document.getElementById('user-display-email').innerText = currentUser.email;
-        loadScoreFromCloud();
       }
+      // 每次開啟網頁時先抓取全服最速台服紀錄
+      await fetchGlobalTaiwanRecords();
     }
     checkUser();
+
+    // 🌐 從 Supabase 抓取所有玩家的資料，並計算出每張賽道的全服最快紀錄
+    async function fetchGlobalTaiwanRecords() {
+      const { data, error } = await supabaseClient.from('player_scores').select('*');
+      if (error || !data) return;
+
+      globalBestTaiwanRecords = {};
+
+      data.forEach(player => {
+        const recs = player.taiwan_records;
+        if (recs && typeof recs === 'object') {
+          for (const [trackIdx, recObj] of Object.entries(recs)) {
+            const timeStr = typeof recObj === 'object' ? (recObj.time || '') : (typeof recObj === 'string' ? recObj : '');
+            const playerName = typeof recObj === 'object' ? (recObj.player || player.player_name || '未知車手') : (player.player_name || '未知車手');
+            
+            if (!timeStr) continue;
+
+            // 簡單秒數字串比對（若無紀錄或新秒數較快則更新）
+            if (!globalBestTaiwanRecords[trackIdx] || timeStr < globalBestTaiwanRecords[trackIdx].time) {
+              globalBestTaiwanRecords[trackIdx] = { time: timeStr, player: playerName };
+            }
+          }
+        }
+      });
+
+      if (currentTab === 'all') {
+        renderTracks(document.getElementById("searchInput").value);
+      }
+    }
 
     async function handleSignUp() {
       const email = document.getElementById('auth-email').value;
@@ -462,7 +494,7 @@
       red: { bg: "bg-[#ffe2e2] border-[#fbc4c4]", title: "text-rose-950" }
     };
 
-    // 綜合圖池（93張賽道，包含 Top ~ 娛樂 共 7 個級距最新秒數）
+    // 綜合圖池（93張賽道）
     const rawDataAll = [
       { name: "城鎮高速公路", group: "yellow", times: ["1.27.79", "1.28.49", "1.28.99", "1.29.99", "1.30.99", "1.32.29", "1.32.29+"] },
       { name: "城鎮南山", group: "yellow", times: ["1.23.29", "1.23.99", "1.24.79", "1.25.79", "1.26.79", "1.27.99", "1.27.99+"] },
@@ -562,7 +594,7 @@
       { name: "N被遺忘的沙之記憶", group: "red", times: ["2.19.29", "2.21.29", "2.23.29", "2.25.99", "2.29.29", "2.31.49", "2.32.80+"] }
     ];
 
-    // 比賽圖池專用：22 張賽道與 6 個級距秒數（無娛樂按鈕）
+    // 比賽圖池專用：22 張賽道
     const matchCustomData = [
       { name: "龍之運河", group: "yellow", times: ["1.49.99", "1.51.49", "1.51.99", "1.53.49", "1.55.49", "1.56.99"] },
       { name: "拉薩", group: "yellow", times: ["1.34.99", "1.35.99", "1.36.99", "1.37.99", "1.38.99", "1.40.49"] },
@@ -574,7 +606,7 @@
       { name: "城堡", group: "blue", times: ["1.44.49", "1.46.49", "1.47.99", "1.49.49", "1.50.99", "1.52.99"] },
       { name: "危險機關", group: "blue", times: ["1.37.99", "1.39.49", "1.40.99", "1.42.99", "1.44.99", "1.46.99"] },
       { name: "刀劍雲中峽谷", group: "blue", times: ["1.26.49", "1.26.99", "1.27.99", "1.29.49", "1.30.99", "1.32.99"] },
-      { name: "雙工廠", group: "blue", times: ["1.38.99", "1.39.99", "1.41.49", "1.42.99", "1.44.99", "1.45.99"] },
+      { name: "雙工廠", group: "blue", times: ["1.38.99", "1.39.99", "1.41.49", "1.42.99", "1.44.49", "1.45.99"] },
       { name: "黃金文明座標", group: "blue", times: ["1.23.49", "1.24.49", "1.25.49", "1.26.99", "1.28.99", "1.30.99"] },
       { name: "中華胡同", group: "blue", times: ["1.52.49", "1.53.49", "1.54.49", "1.55.99", "1.57.49", "1.59.49"] },
       { name: "鯊魚島", group: "blue", times: ["2.00.49", "2.01.99", "2.03.49", "2.04.99", "2.06.49", "2.08.49"] },
@@ -640,6 +672,8 @@
             <div class="flex-1 rounded-lg bg-[#fcd45a] flex items-center justify-center text-xs font-black text-slate-800 shadow-2xs">三線</div>
             <div class="flex-1 rounded-lg bg-[#f97316] flex items-center justify-center text-xs font-black text-white shadow-2xs">娛樂</div>
           `;
+          // 每次切換到綜合圖池時重新抓取全服最速紀錄
+          fetchGlobalTaiwanRecords();
         } else {
           btnMatch.className = activeBtnClass;
           badge.innerText = "比賽 / 交流專用圖池評定";
@@ -677,13 +711,13 @@
         const card = document.createElement("div");
         card.className = `track-card ${style.bg} border rounded-2xl p-4 sm:p-5 shadow-sm transition-all duration-200`;
         
-        // 僅在綜合圖池 (currentTab === 'all') 顯示左側「台服紀錄 (玩家名字 + 秒數)」
         let taiwanRecordHtml = '';
         if (currentTab === 'all') {
+          // 優先顯示從全服資料抓到的最快紀錄，若無則顯示個人目前編輯的
+          const globalBest = globalBestTaiwanRecords[index];
           const recObj = taiwanRecordsAll[index] || {};
-          // 相容舊資料格式
-          const recPlayer = typeof recObj === 'object' ? (recObj.player || '') : '';
-          const recTime = typeof recObj === 'object' ? (recObj.time || '') : (typeof recObj === 'string' ? recObj : '');
+          const recPlayer = globalBest ? globalBest.player : (recObj.player || '');
+          const recTime = globalBest ? globalBest.time : (recObj.time || '');
           
           const displayBadge = (recTime || recPlayer) 
             ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-rose-600 text-white font-black text-xs shadow-2xs">🏆 ${recTime || '未填秒數'} ${recPlayer ? `(${recPlayer})` : ''}</span>`
@@ -691,11 +725,11 @@
 
           taiwanRecordHtml = `
             <div class="flex flex-wrap items-center gap-1.5 bg-white/80 px-2.5 py-1.5 rounded-xl border border-amber-300/80 shadow-2xs">
-              <span class="text-[11px] font-black text-amber-900 whitespace-nowrap">🇹🇼 台服紀錄:</span>
+              <span class="text-[11px] font-black text-amber-900 whitespace-nowrap">🇹🇼 全服台服紀錄:</span>
               ${displayBadge}
               <div class="flex items-center gap-1 ml-1">
-                <input type="text" value="${recPlayer}" placeholder="玩家名稱" onchange="updateTaiwanRecord(${index}, 'player', this.value)" class="w-24 px-2 py-0.5 text-xs font-bold bg-[#fbf5eb] border border-amber-300 rounded-md text-amber-950 focus:outline-none focus:ring-1 focus:ring-amber-500">
-                <input type="text" value="${recTime}" placeholder="秒數(例:1.25.50)" onchange="updateTaiwanRecord(${index}, 'time', this.value)" class="w-24 px-2 py-0.5 text-xs font-mono font-bold bg-[#fbf5eb] border border-amber-300 rounded-md text-amber-950 focus:outline-none focus:ring-1 focus:ring-amber-500">
+                <input type="text" value="${recObj.player || ''}" placeholder="玩家名稱" onchange="updateTaiwanRecord(${index}, 'player', this.value)" class="w-24 px-2 py-0.5 text-xs font-bold bg-[#fbf5eb] border border-amber-300 rounded-md text-amber-950 focus:outline-none focus:ring-1 focus:ring-amber-500">
+                <input type="text" value="${recObj.time || ''}" placeholder="秒數(例:1.25.50)" onchange="updateTaiwanRecord(${index}, 'time', this.value)" class="w-24 px-2 py-0.5 text-xs font-mono font-bold bg-[#fbf5eb] border border-amber-300 rounded-md text-amber-950 focus:outline-none focus:ring-1 focus:ring-amber-500">
               </div>
             </div>
           `;
@@ -746,8 +780,7 @@
 
     function updateTaiwanRecord(trackIdx, field, val) {
       if (!taiwanRecordsAll[trackIdx] || typeof taiwanRecordsAll[trackIdx] !== 'object') {
-        const oldTime = typeof taiwanRecordsAll[trackIdx] === 'string' ? taiwanRecordsAll[trackIdx] : '';
-        taiwanRecordsAll[trackIdx] = { player: '', time: oldTime };
+        taiwanRecordsAll[trackIdx] = { player: '', time: '' };
       }
       taiwanRecordsAll[trackIdx][field] = val.trim();
 
@@ -893,11 +926,15 @@
 
       const { error } = await supabaseClient.from('player_scores').upsert(upsertData, { onConflict: 'user_id' });
 
-      if (error) alert('儲存失敗: ' + error.message);
-      else alert('🎉 成功將 [' + (currentTab === 'all' ? '綜合圖池' : '比賽專用圖池') + '] 資料儲存至雲端！');
+      if (error) {
+        alert('儲存失敗: ' + error.message);
+      } else {
+        alert('🎉 成功將資料儲存至雲端，全服台服紀錄已同步更新！');
+        await fetchGlobalTaiwanRecords();
+      }
     }
 
-    // ☁️ 讀取雲端資料
+    // ☁️ 讀取雲端個人資料
     async function loadScoreFromCloud() {
       if (!currentUser) return;
       const { data, error } = await supabaseClient
@@ -914,14 +951,16 @@
         }
         if (data.selections) Object.assign(selectionsAll, data.selections);
         if (data.match_selections) Object.assign(selectionsMatch, data.match_selections);
-        if (data.taiwan_records) Object.assign(taiwanRecordsAll, data.taiwan_records);
+        if (data.taiwan_records) {
+          Object.assign(taiwanRecordsAll, data.taiwan_records);
+        }
 
         renderTracks();
         calculateRank();
       }
     }
 
-    // 🏆 打開排行榜（顯示全體車手，不限人數）
+    // 🏆 打開排行榜
     async function openLeaderboard() {
       const modal = document.getElementById('leaderboard-modal');
       const listContainer = document.getElementById('leaderboard-list');
