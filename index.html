@@ -105,8 +105,8 @@
           🏎️
         </div>
         <div>
-          <h1 class="text-xl font-black tracking-tight text-amber-950">S42台服跑跑卡丁車RUSH+資料庫</h1>
-          <p class="text-xs font-semibold text-amber-800/80">實力分線評定系統 · 雲端儲存版</p>
+          <h1 class="text-xl font-black tracking-tight text-amber-950">S41台服跑跑卡丁車RUSH+資料庫</h1>
+          <p class="text-xs font-semibold text-amber-800/80">實力分線評定系統 · 測試版</p>
         </div>
       </div>
 
@@ -346,6 +346,9 @@
     let currentTab = 'notice'; 
     let playerHonors = [];
     let isDesktopSticky = true;
+    
+    // 僅限綜合圖池的台服紀錄物件 (key: 賽道索引, value: { player: 玩家名稱, time: 秒數 })
+    let taiwanRecordsAll = {};
 
     // 📱/💻 切換版面模式（懸浮 vs 一般滾動）
     function toggleLayoutMode() {
@@ -497,7 +500,7 @@
       { name: "鋼鐵熔爐", group: "green", times: ["1.38.99", "1.39.99", "1.41.29", "1.42.49", "1.43.99", "1.45.49", "1.45.49+"] },
       { name: "沉睡的巨人", group: "green", times: ["1.23.29", "1.23.79", "1.24.79", "1.25.99", "1.27.29", "1.28.49", "1.28.49+"] },
       { name: "上海F1賽道", group: "green", times: ["1.15.79", "1.16.49", "1.17.49", "1.19.99", "1.19.49", "1.20.79", "1.20.79+"] },
-      { name: "太空走廊", group: "green", times: ["1.44.29", "1.45.29", "1.46.49", "1.47.99", "1.49.49", "1.50.99", "1.50.99+"] },
+      { name: "太空走廊", group: "green", times: ["1.44.29", "1.45.29", "1.46.49", "1.49.99", "1.49.49", "1.50.99", "1.50.99+"] },
       { name: "史詩飛恩龍城", group: "green", times: ["1.31.99", "1.32.99", "1.33.99", "1.35.49", "1.36.49", "1.37.99", "1.37.99+"] },
       { name: "神域奧丁神殿", group: "green", times: ["1.31.79", "1.32.49", "1.33.79", "1.34.99", "1.36.29", "1.37.79", "1.37.79+"] },
       { name: "宙斯城", group: "green", times: ["1.25.29", "1.25.99", "1.26.99", "1.28.29", "1.29.49", "1.30.79", "1.30.79+"] },
@@ -674,19 +677,50 @@
         const card = document.createElement("div");
         card.className = `track-card ${style.bg} border rounded-2xl p-4 sm:p-5 shadow-sm transition-all duration-200`;
         
-        let html = `
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2.5">
-              <span class="w-6 h-6 rounded-lg bg-white/90 border border-black/10 flex items-center justify-center text-xs font-black text-slate-700 shadow-2xs">
-                ${index + 1}
-              </span>
-              <h3 class="font-extrabold text-base sm:text-lg tracking-tight ${style.title}">${track.name}</h3>
+        // 僅在綜合圖池 (currentTab === 'all') 顯示左側「台服紀錄 (玩家名字 + 秒數)」
+        let taiwanRecordHtml = '';
+        if (currentTab === 'all') {
+          const recObj = taiwanRecordsAll[index] || {};
+          // 相容舊資料格式
+          const recPlayer = typeof recObj === 'object' ? (recObj.player || '') : '';
+          const recTime = typeof recObj === 'object' ? (recObj.time || '') : (typeof recObj === 'string' ? recObj : '');
+          
+          const displayBadge = (recTime || recPlayer) 
+            ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-rose-600 text-white font-black text-xs shadow-2xs">🏆 ${recTime || '未填秒數'} ${recPlayer ? `(${recPlayer})` : ''}</span>`
+            : `<span class="text-[11px] font-semibold text-amber-800/60">尚無紀錄</span>`;
+
+          taiwanRecordHtml = `
+            <div class="flex flex-wrap items-center gap-1.5 bg-white/80 px-2.5 py-1.5 rounded-xl border border-amber-300/80 shadow-2xs">
+              <span class="text-[11px] font-black text-amber-900 whitespace-nowrap">🇹🇼 台服紀錄:</span>
+              ${displayBadge}
+              <div class="flex items-center gap-1 ml-1">
+                <input type="text" value="${recPlayer}" placeholder="玩家名稱" onchange="updateTaiwanRecord(${index}, 'player', this.value)" class="w-24 px-2 py-0.5 text-xs font-bold bg-[#fbf5eb] border border-amber-300 rounded-md text-amber-950 focus:outline-none focus:ring-1 focus:ring-amber-500">
+                <input type="text" value="${recTime}" placeholder="秒數(例:1.25.50)" onchange="updateTaiwanRecord(${index}, 'time', this.value)" class="w-24 px-2 py-0.5 text-xs font-mono font-bold bg-[#fbf5eb] border border-amber-300 rounded-md text-amber-950 focus:outline-none focus:ring-1 focus:ring-amber-500">
+              </div>
             </div>
-            ${currentSelections[index] !== undefined 
-              ? `<span class="text-xs font-black px-2.5 py-1 rounded-md bg-amber-700 text-white shadow-2xs">已選擇: ${tierLabels[currentSelections[index]]}</span>` 
-              : `<span class="text-xs font-semibold text-slate-500/70">未選擇</span>`
-            }
+          `;
+        }
+
+        let html = `
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 mb-3">
+            <div class="flex flex-wrap items-center gap-2.5">
+              ${taiwanRecordHtml}
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-white/90 border border-black/10 flex items-center justify-center text-xs font-black text-slate-700 shadow-2xs">
+                  ${index + 1}
+                </span>
+                <h3 class="font-extrabold text-base sm:text-lg tracking-tight ${style.title}">${track.name}</h3>
+              </div>
+            </div>
+            
+            <div class="self-end lg:self-auto">
+              ${currentSelections[index] !== undefined 
+                ? `<span class="text-xs font-black px-2.5 py-1 rounded-md bg-amber-700 text-white shadow-2xs">已選擇: ${tierLabels[currentSelections[index]]}</span>` 
+                : `<span class="text-xs font-semibold text-slate-500/70">未選擇</span>`
+              }
+            </div>
           </div>
+
           <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-${tierLabels.length} gap-2">
         `;
 
@@ -710,6 +744,19 @@
       });
     }
 
+    function updateTaiwanRecord(trackIdx, field, val) {
+      if (!taiwanRecordsAll[trackIdx] || typeof taiwanRecordsAll[trackIdx] !== 'object') {
+        const oldTime = typeof taiwanRecordsAll[trackIdx] === 'string' ? taiwanRecordsAll[trackIdx] : '';
+        taiwanRecordsAll[trackIdx] = { player: '', time: oldTime };
+      }
+      taiwanRecordsAll[trackIdx][field] = val.trim();
+
+      if (!taiwanRecordsAll[trackIdx].player && !taiwanRecordsAll[trackIdx].time) {
+        delete taiwanRecordsAll[trackIdx];
+      }
+      renderTracks(document.getElementById("searchInput").value);
+    }
+
     function selectTier(trackIdx, tierIdx) {
       const currentSelections = getCurrentSelections();
       if (currentSelections[trackIdx] === tierIdx) {
@@ -722,10 +769,14 @@
     }
 
     function resetAllSelections() {
-      if (confirm('確定要重製目前圖池所有已選取的賽道成績嗎？')) {
+      const confirmMsg = currentTab === 'all' 
+        ? '確定要重製綜合圖池所有已選取的賽道成績與填寫的台服紀錄嗎？' 
+        : '確定要重製目前圖池所有已選取的賽道成績嗎？';
+      if (confirm(confirmMsg)) {
         const currentSelections = getCurrentSelections();
-        for (let key in currentSelections) {
-          delete currentSelections[key];
+        for (let key in currentSelections) { delete currentSelections[key]; }
+        if (currentTab === 'all') {
+          for (let key in taiwanRecordsAll) { delete taiwanRecordsAll[key]; }
         }
         renderTracks(document.getElementById("searchInput").value);
         calculateRank();
@@ -815,7 +866,7 @@
       }
     }
 
-    // ☁️ 儲存成績與榮譽戰績至 Supabase
+    // ☁️ 儲存成績、榮譽戰績與綜合圖池台服紀錄至 Supabase
     async function saveScoreToCloud() {
       if (!currentUser) { alert('請先登入帳號才能儲存成績至雲端！'); return; }
       const playerName = document.getElementById('player-name-input').value.trim();
@@ -833,6 +884,7 @@
 
       if (currentTab === 'all') {
         upsertData.selections = currentSelections;
+        upsertData.taiwan_records = taiwanRecordsAll;
         upsertData.avg_score = avgScore.toFixed(2);
       } else {
         upsertData.match_selections = currentSelections;
@@ -842,7 +894,7 @@
       const { error } = await supabaseClient.from('player_scores').upsert(upsertData, { onConflict: 'user_id' });
 
       if (error) alert('儲存失敗: ' + error.message);
-      else alert('🎉 成功將 [' + (currentTab === 'all' ? '綜合圖池' : '比賽專用圖池') + '] 與戰績榮譽儲存至雲端！');
+      else alert('🎉 成功將 [' + (currentTab === 'all' ? '綜合圖池' : '比賽專用圖池') + '] 資料儲存至雲端！');
     }
 
     // ☁️ 讀取雲端資料
@@ -860,12 +912,10 @@
           playerHonors = data.honors;
           renderHonors();
         }
-        if (data.selections) {
-          Object.assign(selectionsAll, data.selections);
-        }
-        if (data.match_selections) {
-          Object.assign(selectionsMatch, data.match_selections);
-        }
+        if (data.selections) Object.assign(selectionsAll, data.selections);
+        if (data.match_selections) Object.assign(selectionsMatch, data.match_selections);
+        if (data.taiwan_records) Object.assign(taiwanRecordsAll, data.taiwan_records);
+
         renderTracks();
         calculateRank();
       }
@@ -962,6 +1012,7 @@
       detailsEl.classList.remove('hidden');
       const player = globalPlayersData.find(p => p.user_id === userId);
       const targetSelections = currentTab === 'all' ? player.selections : player.match_selections;
+      const targetTaiwanRecords = currentTab === 'all' ? (player.taiwan_records || {}) : {};
       const targetRawData = getCurrentRawData();
       const tierLabels = getCurrentTierLabels();
 
@@ -974,7 +1025,16 @@
       for (const [trackIdx, tierIdx] of Object.entries(targetSelections)) {
         const trackName = targetRawData[trackIdx] ? targetRawData[trackIdx].name : `賽道 #${parseInt(trackIdx) + 1}`;
         const tierName = tierLabels[tierIdx] || '未知';
-        detailsHtml += `<div class="flex justify-between border-b border-amber-100/60 py-1"><span>${trackName}</span><span class="font-bold text-amber-800">${tierName}</span></div>`;
+        let twRec = '';
+        if (currentTab === 'all' && targetTaiwanRecords[trackIdx]) {
+          const rec = targetTaiwanRecords[trackIdx];
+          if (typeof rec === 'object' && (rec.time || rec.player)) {
+            twRec = ` (台服紀錄: ${rec.time || ''} ${rec.player ? `- ${rec.player}` : ''})`;
+          } else if (typeof rec === 'string') {
+            twRec = ` (台服紀錄: ${rec})`;
+          }
+        }
+        detailsHtml += `<div class="flex justify-between border-b border-amber-100/60 py-1"><span>${trackName}${twRec}</span><span class="font-bold text-amber-800">${tierName}</span></div>`;
       }
       contentEl.innerHTML = detailsHtml || '<div class="text-amber-800/60">無評定記錄</div>';
     }
